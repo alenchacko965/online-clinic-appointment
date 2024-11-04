@@ -4,13 +4,15 @@ import mysql.connector
 from PIL import Image, ImageTk
 import random
 
+
+
 def set_background(window, image_path):
     background_image = Image.open(image_path)
     background_image = background_image.resize((800, 600), Image.LANCZOS)
     bg_image = ImageTk.PhotoImage(background_image)
 
     label_background = tk.Label(window, image=bg_image)
-    label_background.image = bg_image 
+    label_background.image = bg_image  # Keep a reference to avoid garbage collection
     label_background.place(x=0, y=0, relwidth=1, relheight=1)
 
 def login():
@@ -21,7 +23,7 @@ def login():
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         
@@ -30,10 +32,10 @@ def login():
         cursor.execute(query, (user_id,))
         user = cursor.fetchone()
 
-        if user and user[2] == password:  
+        if user and user[2] == password:  # Assuming password is the 3rd column
             messagebox.showinfo("Login", "Login successful!")
-            root.withdraw()  
-            open_home_page()  
+            root.withdraw()  # Hide the login window
+            open_home_page()  # Open the home page
         else:
             messagebox.showerror("Error", "Invalid User ID or Password.")
     
@@ -49,8 +51,9 @@ def register():
     registration_window.title("Register")
     registration_window.geometry("800x600")
     
-    set_background(registration_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(registration_window, "O:\\project\\background.png")
 
+    # Registration Form Labels and Entries
     tk.Label(registration_window, text="Name:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=5)
     entry_name = tk.Entry(registration_window, font=("Helvetica", 12), width=30)
     entry_name.pack(pady=5)
@@ -71,6 +74,7 @@ def register():
     entry_password_reg = tk.Entry(registration_window, show='*', font=("Helvetica", 12), width=30)
     entry_password_reg.pack(pady=5)
 
+    # Submit Button
     button_submit = tk.Button(registration_window, text="Submit", command=lambda: submit_registration(
         entry_name.get(),
         entry_password_reg.get(),
@@ -85,24 +89,26 @@ def submit_registration(username, password, contact, address, blood_group):
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         
         cursor = conn.cursor()
+        
+        # Get the next user_id
         cursor.execute("SELECT MAX(user_id) FROM users")
         max_user_id = cursor.fetchone()[0]
 
         if max_user_id is not None:
-            user_id = max_user_id + 1  
+            user_id = max_user_id + 1  # Increment the max user_id
         else:
-            user_id = 1000 
+            user_id = 1000  # Start from 1000 if no users exist
 
         query = "INSERT INTO users (user_id, username, password, contact, address, blood_group) VALUES (%s, %s, %s, %s, %s, %s)"
         cursor.execute(query, (user_id, username, password, contact, address, blood_group))
         conn.commit()
         
-        messagebox.showinfo("Registration", "Registration successful!")
+        messagebox.showinfo("Registration", f"Registration successful! Your User ID is: {user_id}")
         
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Database error: {err}")
@@ -112,7 +118,7 @@ def open_home_page():
     home_window.title("Home Page")
     home_window.geometry("800x600")
     
-    set_background(home_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(home_window, "O:\\project\\background.png")
 
     label_title = tk.Label(home_window, text="Welcome to Your Home Page", font=("Helvetica", 16, "bold"), bg="#f0f0f0")
     label_title.pack(pady=20)
@@ -140,15 +146,15 @@ def view_user_profile():
     profile_window.title("User Profile")
     profile_window.geometry("800x600")
     
-    set_background(profile_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(profile_window, "O:\\project\\background.png")
 
-    user_id = entry_user_id.get().strip()  
+    user_id = entry_user_id.get().strip()  # Get the logged-in user ID
 
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
@@ -157,6 +163,7 @@ def view_user_profile():
         user = cursor.fetchone()
 
         if user:
+            # Display current user info
             tk.Label(profile_window, text=f"User ID: {user[0]}", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=5)
             tk.Label(profile_window, text="Username:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=5)
             entry_username = tk.Entry(profile_window, font=("Helvetica", 12), width=30)
@@ -183,6 +190,7 @@ def view_user_profile():
             entry_blood_group.insert(0, user[5])
             entry_blood_group.pack(pady=5)
 
+            # Confirm button to update user info
             button_confirm = tk.Button(profile_window, text="Confirm", command=lambda: update_user_profile(
                 user_id,
                 entry_username.get(),
@@ -203,7 +211,7 @@ def update_user_profile(user_id, username, password, contact, address, blood_gro
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         
@@ -227,16 +235,18 @@ def book_appointment():
     appointment_window.title("Book Appointment")
     appointment_window.geometry("800x600")
     
-    set_background(appointment_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(appointment_window, "O:\\project\\background.png")
 
+    # Select Department
     tk.Label(appointment_window, text="Select Department:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=10)
     department_var = StringVar(appointment_window)
-
+    
+    # Fetch specialities from the database
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
@@ -249,6 +259,7 @@ def book_appointment():
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Database error: {err}")
     
+    # Next button for selecting doctor
     button_next_doctor = tk.Button(appointment_window, text="Select Doctor", command=lambda: select_doctor(department_var.get().split(':')[1]), font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20)
     button_next_doctor.pack(pady=10)
 
@@ -257,16 +268,17 @@ def select_doctor(speciality_id):
     doctor_window.title("Select Doctor")
     doctor_window.geometry("800x600")
 
-    set_background(doctor_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(doctor_window, "O:\\project\\background.png")
 
     tk.Label(doctor_window, text="Select Doctor:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=10)
     doctor_var = StringVar(doctor_window)
 
+    # Fetch doctors from the database
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
@@ -279,6 +291,7 @@ def select_doctor(speciality_id):
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Database error: {err}")
     
+    # Next button for selecting date
     button_next_date = tk.Button(doctor_window, text="Select Date", command=lambda: select_date(doctor_var.get().split(':')[1]), font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20)
     button_next_date.pack(pady=10)
 
@@ -287,7 +300,7 @@ def select_date(doctor_id):
     date_window.title("Select Date")
     date_window.geometry("800x600")
 
-    set_background(date_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(date_window, "O:\\project\\background.png")
 
     tk.Label(date_window, text="Select Appointment Date:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=10)
     
@@ -302,27 +315,29 @@ def select_time(doctor_id, date):
     time_window.title("Select Time")
     time_window.geometry("800x600")
 
-    set_background(time_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(time_window, "O:\\project\\background.png")
 
     tk.Label(time_window, text="Select Time Slot:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=10)
     time_var = StringVar(time_window)
 
+    # Example time slots (you might want to pull these from your database)
     time_slots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"]
     time_menu = tk.OptionMenu(time_window, time_var, *time_slots)
     time_menu.pack(pady=5)
 
+    # Confirm button
     button_confirm = tk.Button(time_window, text="Confirm Appointment", command=lambda: confirm_appointment(doctor_id, date, time_var.get(), time_window), font=("Helvetica", 12), bg="#4CAF50", fg="white", width=15)
     button_confirm.pack(pady=10)
 
 def confirm_appointment(doctor_id, appointment_date, appointment_time, time_window):
-    appointment_id = random.randint(1000, 9999) 
-    user_id = entry_user_id.get()
+    appointment_id = random.randint(1000, 9999)  # Generate a random appointment ID
+    user_id = entry_user_id.get()  # Assume the user ID is stored here
     
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
@@ -333,6 +348,7 @@ def confirm_appointment(doctor_id, appointment_date, appointment_time, time_wind
 
         messagebox.showinfo("Appointment", f"Appointment booked successfully!\nAppointment ID: {appointment_id}")
         
+        # Proceed to payment
         payment_screen(appointment_id, appointment_date, appointment_time)
     
     except mysql.connector.Error as err:
@@ -343,7 +359,7 @@ def payment_screen(appointment_id, date, time):
     payment_window.title("Payment")
     payment_window.geometry("800x600")
 
-    set_background(payment_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(payment_window, "O:\\project\\background.png")
 
     tk.Label(payment_window, text="Payment Details", font=("Helvetica", 16, "bold"), bg="#f0f0f0").pack(pady=20)
     tk.Label(payment_window, text=f"Appointment ID: {appointment_id}", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=5)
@@ -355,28 +371,32 @@ def payment_screen(appointment_id, date, time):
     check_box = tk.Checkbutton(payment_window, text="Pay on Visit", variable=pay_on_visit, bg="#f0f0f0")
     check_box.pack(pady=10)
 
-    button_confirm = tk.Button(payment_window, text="Confirm Payment", command=lambda: confirm_payment(appointment_id, payment_window), font=("Helvetica", 12), bg="#4CAF50", fg="white", width=15)
+    button_confirm = tk.Button(payment_window, text="Confirm Payment", 
+                                command=lambda: confirm_payment(appointment_id, payment_window, pay_on_visit.get()), 
+                                font=("Helvetica", 12), bg="#4CAF50", fg="white", width=15)
     button_confirm.pack(pady=20)
 
-def confirm_payment(appointment_id, payment_window):
-    amount = 300 
-    payment_status = "paid"  
+def confirm_payment(appointment_id, payment_window, pay_on_visit):
+    amount = 300  # Fixed consultation fee
+    payment_status = "Pending" if pay_on_visit else "Paid"  # Set status based on checkbox
 
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
 
+        # Generate a random unique payment_id
         while True:
-            payment_id = random.randint(1000, 9999)
+            payment_id = random.randint(1000, 9999)  # Generate a random payment ID
             cursor.execute("SELECT COUNT(*) FROM payments WHERE payment_id = %s", (payment_id,))
-            if cursor.fetchone()[0] == 0:
+            if cursor.fetchone()[0] == 0:  # Check if the payment_id is unique
                 break
 
+        # Insert payment with SYSDATE() for the current date
         query = """
             INSERT INTO payments (payment_id, appointment_id, amount, payment_date, status) 
             VALUES (%s, %s, %s, SYSDATE(), %s)
@@ -385,7 +405,8 @@ def confirm_payment(appointment_id, payment_window):
         conn.commit()
 
         messagebox.showinfo("Payment", "Payment confirmed successfully!")
-        payment_window.destroy()  
+        payment_window.destroy()  # Close payment window
+        # Optionally redirect to homepage
         open_home_page()
 
     except mysql.connector.Error as err:
@@ -396,28 +417,31 @@ def view_appointments():
     appointments_window.title("Your Appointments")
     appointments_window.geometry("800x600")
     
-    set_background(appointments_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(appointments_window, "O:\\project\\background.png")
 
     tk.Label(appointments_window, text="Your Appointments", font=("Helvetica", 16, "bold"), bg="#f0f0f0").pack(pady=20)
 
+    # Create a Frame to hold the Listbox and buttons
     frame = tk.Frame(appointments_window)
     frame.pack(pady=10)
 
+    # Create a Listbox to display appointments
     appointments_listbox = tk.Listbox(frame, width=80, height=15)
     appointments_listbox.pack(side=tk.LEFT, padx=10)
 
+    # Scrollbar for the Listbox
     scrollbar = tk.Scrollbar(frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     appointments_listbox.config(yscrollcommand=scrollbar.set)
     scrollbar.config(command=appointments_listbox.yview)
 
-    user_id = entry_user_id.get() 
+    user_id = entry_user_id.get()  # Get the logged-in user ID
 
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
@@ -431,6 +455,7 @@ def view_appointments():
                 appointment_info = f"Appointment ID: {appointment[0]}, User ID: {appointment[1]}, Doctor ID: {appointment[2]}, Date: {appointment[3]}, Time: {appointment[4]}"
                 appointments_listbox.insert(tk.END, appointment_info)
 
+                # Create a cancel button for each appointment
                 cancel_button = tk.Button(appointments_window, text="Cancel", command=lambda app_id=appointment[0]: cancel_appointment(app_id, appointments_window), bg="#f44336", fg="white")
                 cancel_button.pack(pady=2)
 
@@ -445,18 +470,21 @@ def cancel_appointment(appointment_id, window):
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
+
+        # Delete from payments table first
         cursor.execute("DELETE FROM payments WHERE appointment_id = %s", (appointment_id,))
         conn.commit()
 
+        # Then delete from appointments table
         cursor.execute("DELETE FROM appointments WHERE appointment_id = %s", (appointment_id,))
         conn.commit()
 
         messagebox.showinfo("Appointment Cancellation", "Appointment Cancelled Successfully.")
-        window.destroy() 
+        window.destroy()  # Close the appointments window
 
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Database error: {err}")
@@ -466,27 +494,31 @@ def view_payments():
     payments_window.title("Your Payments")
     payments_window.geometry("800x600")
 
-    set_background(payments_window, "C:\\Users\\ebinb\\Downloads\\background.png")
+    set_background(payments_window, "O:\\project\\background.png")
 
     tk.Label(payments_window, text="Your Payments", font=("Helvetica", 16, "bold"), bg="#f0f0f0").pack(pady=20)
 
+    # Create a Frame to hold the Listbox and buttons
     frame = tk.Frame(payments_window)
     frame.pack(pady=10)
+
+    # Create a Listbox to display payments
     payments_listbox = tk.Listbox(frame, width=80, height=15)
     payments_listbox.pack(side=tk.LEFT, padx=10)
 
+    # Scrollbar for the Listbox
     scrollbar = tk.Scrollbar(frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     payments_listbox.config(yscrollcommand=scrollbar.set)
     scrollbar.config(command=payments_listbox.yview)
 
-    user_id = entry_user_id.get() 
+    user_id = entry_user_id.get()  # Get the logged-in user ID
 
     try:
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='1234',
             database='project'
         )
         cursor = conn.cursor()
@@ -511,15 +543,18 @@ def view_payments():
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Database error: {err}")
 
+    # Exit button to return to home page
     button_exit = tk.Button(payments_window, text="Exit", command=payments_window.destroy, font=("Helvetica", 12), width=20)
     button_exit.pack(pady=20)
 
+# Main application
 root = tk.Tk()
 root.title("Medicare Clinic Appointment")
 root.geometry("800x600")
 
-set_background(root, "C:\\Users\\ebinb\\Downloads\\background.png")
+set_background(root, "O:\\project\\background.png")
 
+# Login Form Labels and Entries
 tk.Label(root, text="User ID:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady=5)
 entry_user_id = tk.Entry(root, font=("Helvetica", 12), width=30)
 entry_user_id.pack(pady=5)
@@ -528,10 +563,12 @@ tk.Label(root, text="Password:", font=("Helvetica", 12), bg="#f0f0f0").pack(pady
 entry_password = tk.Entry(root, show='*', font=("Helvetica", 12), width=30)
 entry_password.pack(pady=5)
 
+# Login and Register Buttons
 button_login = tk.Button(root, text="Login", command=login, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=15)
 button_login.pack(pady=20)
 
 button_register = tk.Button(root, text="Register", command=register, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=15)
 button_register.pack(pady=5)
 
+# Run the application
 root.mainloop()
